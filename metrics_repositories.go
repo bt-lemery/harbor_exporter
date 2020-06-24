@@ -38,7 +38,15 @@ func (e *Exporter) collectRepositoriesMetric(ch chan<- prometheus.Metric) bool {
 			Update_time   time.Time
 		}
 	}
-	projectsBody := e.client.request("/api/projects")
+
+        var ep string
+        if e.opts.apiversion == "1" {
+          ep = "/api/projects"
+        } else {
+          ep = "/api/v2.0/projects"
+        }
+
+	projectsBody := e.client.request(ep)
 	var projectsData projectsMetrics
 
 	if err := json.Unmarshal(projectsBody, &projectsData); err != nil {
@@ -48,8 +56,16 @@ func (e *Exporter) collectRepositoriesMetric(ch chan<- prometheus.Metric) bool {
 
 	for i := range projectsData {
 		projectId := strconv.FormatFloat(projectsData[i].Project_id, 'f', 0, 32)
+                projectName := projectsData[i].Name
 
-		body := e.client.request("/api/repositories?project_id=" + projectId)
+                var pep string
+                if e.opts.apiversion == "1" {
+                  ep = "/api/repositories?project_id=" + projectId
+                } else {
+                  ep = "/api/v2.0/projects/" + projectName + "/repositories"
+                }
+
+		body := e.client.request(pep)
 		var data repositoriesMetric
 
 		if err := json.Unmarshal(body, &data); err != nil {

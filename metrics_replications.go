@@ -23,7 +23,14 @@ func (e *Exporter) collectReplicationsMetric(ch chan<- prometheus.Metric) bool {
 		// Extra fields omitted for maintainability: not relevant for current metrics
 	}
 
-	policiesBody := e.client.request("/api/replication/policies")
+        var ep string
+        if e.opts.apiversion == "1" {
+          ep = "/api/replication/policies"
+        } else {
+          ep = "/api/v2.0/replication/policies"
+        }
+
+	policiesBody := e.client.request(ep)
 	var policiesData policiesMetrics
 
 	if err := json.Unmarshal(policiesBody, &policiesData); err != nil {

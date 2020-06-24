@@ -17,6 +17,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+        "context"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -84,6 +85,7 @@ type harborOpts struct {
 	password string
 	timeout  time.Duration
 	insecure bool
+        apiversion string
 }
 
 type HarborClient struct {
@@ -100,7 +102,9 @@ func (h HarborClient) request(endpoint string) []byte {
 	}
 	req.SetBasicAuth(h.opts.username, h.opts.password)
 
-	resp, err := h.client.Do(req)
+        ctx, cancel := context.WithTimeout(context.Background(), h.opts.timeout * time.Millisecond)
+        defer cancel()
+	resp, err := h.client.Do(req.WithContext(ctx))
 	if err != nil {
 		level.Error(h.logger).Log("msg", "Error handling request for "+endpoint, "err", err.Error())
 		return nil
@@ -292,6 +296,7 @@ func main() {
 	kingpin.Flag("harbor.password", "password").Envar("HARBOR_PASSWORD").Default("password").StringVar(&opts.password)
 	kingpin.Flag("harbor.timeout", "Timeout on HTTP requests to the harbor API.").Default("500ms").DurationVar(&opts.timeout)
 	kingpin.Flag("harbor.insecure", "Disable TLS host verification.").Default("false").BoolVar(&opts.insecure)
+        kingpin.Flag("harbor.apiversion", "Whether to use api version 1 or 2.").Default("1").StringVar(&opts.apiversion)
 
 	promlogConfig := &promlog.Config{}
 	flag.AddFlags(kingpin.CommandLine, promlogConfig)

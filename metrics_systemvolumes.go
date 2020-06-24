@@ -13,7 +13,16 @@ func (e *Exporter) collectSystemVolumesMetric(ch chan<- prometheus.Metric) bool 
 			Free  float64
 		}
 	}
-	body := e.client.request("/api/systeminfo/volumes")
+
+        var ep string
+        if e.opts.apiversion == "1" {
+          ep = "/api/systeminfo/volumes"
+        } else {
+          ep = "/api/v2.0/systeminfo/volumes"
+        }
+
+        body := e.client.request(ep)
+
 	var data systemVolumesMetric
 	if err := json.Unmarshal(body, &data); err != nil {
 		level.Error(e.logger).Log(err.Error())

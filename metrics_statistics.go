@@ -17,7 +17,14 @@ func (e *Exporter) collectStatisticsMetric(ch chan<- prometheus.Metric) bool {
 		Private_repo_count    float64
 	}
 
-	body := e.client.request("/api/statistics")
+        var ep string
+        if e.opts.apiversion == "1" {
+          ep = "/api/statistics"
+        } else {
+          ep = "/api/v2.0/statistics"
+        }
+
+        body := e.client.request(ep)
 
 	var data statisticsMetric
 

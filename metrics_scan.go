@@ -16,7 +16,16 @@ func (e *Exporter) collectScanMetric(ch chan<- prometheus.Metric) bool {
 		Requester string
 		Ongoing   bool
 	}
-	body := e.client.request("/api/scans/all/metrics")
+
+        var ep string
+        if e.opts.apiversion == "1" {
+          ep = "/api/scans/all/metrics"
+        } else {
+          ep = "/api/v2.0/scans/all/metrics"
+        }
+
+        body := e.client.request(ep)
+
 	var data scanMetric
 
 	if err := json.Unmarshal(body, &data); err != nil {
