@@ -102,6 +102,9 @@ func (h HarborClient) request(endpoint string) []byte {
 	}
 	req.SetBasicAuth(h.opts.username, h.opts.password)
 
+        // TODO: authenticate with basic auth above, examine "Set-Cookie" header of API response, capture _xsrf value and b64 decode then send that value
+        // along with each subsequent request in "X-Xsrftoken" header
+
         ctx, cancel := context.WithTimeout(context.Background(), h.opts.timeout * time.Millisecond)
         defer cancel()
 	resp, err := h.client.Do(req.WithContext(ctx))
